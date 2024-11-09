@@ -12,7 +12,7 @@ coin_ids = {coin['name']: coin['id'] for coin in data_coins}
 async def main(page: ft.Page):
     page.title = 'CryptoCurrencyApp'
     page.window.width = 350
-    page.window.height = 650
+    page.window.height = 600
     ids = 'bitcoin'
     vs_currencies = 'usd'
 
@@ -38,16 +38,20 @@ async def main(page: ft.Page):
             data = response.json()
             coin_data = data.get(ids, {})
 
-            result_text = f"Price ({vs_currencies}) 💵: {coin_data.get(vs_currencies, 'N/A')}"
+            result_text = f"💵 Price ({vs_currencies}): {coin_data.get(vs_currencies, 'N/A')}"
 
             if f'{vs_currencies}_market_cap' in coin_data:
-                result_text += f"\n💰 Market cap.: {coin_data[f'{vs_currencies}_market_cap']}"
+                result_text += f"\n💰 Market cap.: {coin_data[f'{vs_currencies}_market_cap']:,.2f} $"
 
             if f'{vs_currencies}_24h_vol' in coin_data:
-                result_text += f"\n🪙 Volume for 24h: {coin_data[f'{vs_currencies}_24h_vol']}"
+                result_text += f"\n🪙 Volume for 24h: {coin_data[f'{vs_currencies}_24h_vol']:,.2f} $"
 
             if f'{vs_currencies}_24h_change' in coin_data:
-                result_text += f"\n📈 {coin_data[f'{vs_currencies}_24h_change']}%"
+                grow = coin_data[f'{vs_currencies}_24h_change']
+                if grow >= 0:
+                    result_text += f"\n📈 {round(coin_data[f'{vs_currencies}_24h_change'], 2)}%"
+                else:
+                    result_text += f"\n📉 {round(coin_data[f'{vs_currencies}_24h_change'], 2)}%"
 
             if 'last_updated_at' in coin_data:
                 last_updated = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(coin_data['last_updated_at']))
@@ -78,10 +82,10 @@ async def main(page: ft.Page):
         ft.Text("Type a name of crypto coin"),
     ])
 
-    include_market_cap = ft.Switch(label="include_market_cap", value=True)
-    include_24hr_vol = ft.Switch(label="include_24hr_vol", value=False)
-    include_24hr_change = ft.Switch(label="include_24hr_change", value=False)
-    include_last_updated_at = ft.Switch(label="include_last_updated_at")
+    include_market_cap = ft.Switch(label="Include market cap", value=True)
+    include_24hr_vol = ft.Switch(label="Include 24hr volume", value=False)
+    include_24hr_change = ft.Switch(label="Include 24hr change", value=False)
+    include_last_updated_at = ft.Switch(label="Last updated at", value=False)
 
     b = ft.ElevatedButton(text="Submit", on_click=button_clicked)
     page.add(coin_icon, coin_row, include_market_cap, include_24hr_vol, include_24hr_change, include_last_updated_at, b, t)
